@@ -41,17 +41,21 @@ public class EventController {
 
 	protected final ServletAdapter servletAdapter;
 
-	//处理事件回调
+	/**
+	 * 处理事件回调
+	 *
+	 * @param request
+	 * @param response
+	 * @throws Throwable
+	 */
 	@RequestMapping("/chatEvent")
 	public void event(HttpServletRequest request, HttpServletResponse response)
 			throws Throwable {
 		if (EVENT_DISPATCHER == null) {
 			init();
 		}
-
 		servletAdapter.handleEvent(request, response, EVENT_DISPATCHER);
 	}
-
 
 	/**
 	 * 处理消息卡片事件回调
@@ -76,28 +80,13 @@ public class EventController {
 		String option = (String) action.get("option");
 
 		Conversation bean = JSONUtil.toBean(option, Conversation.class);
-		log.debug("收到模型选择: {}", bean);
-		if (bean.getParentMessageId() == null) {
-			bean.setParentMessageId("");
-		}
-		if (bean.getConversationId() == null) {
-			bean.setConversationId("");
-		}
 		bean.setChatId(chatId);
 		conversationPool.addConversation(chatId, bean);
 		return "";
 	}
 
-	@GetMapping("/ping")
-	@ResponseBody
-	public String ping() {
-		return "pong";
-	}
-
-
 	private void init() {
-		EVENT_DISPATCHER = EventDispatcher.newBuilder(verificationToken,
-						encryptionKey)
+		EVENT_DISPATCHER = EventDispatcher.newBuilder(verificationToken, encryptionKey)
 				.onP2MessageReceiveV1(new ImService.P2MessageReceiveV1Handler() {
 					@Override
 					public void handle(P2MessageReceiveV1 event) {
@@ -135,5 +124,11 @@ public class EventController {
 					}
 				})
 				.build();
+	}
+
+	@GetMapping("/ping")
+	@ResponseBody
+	public String ping() {
+		return "pong";
 	}
 }

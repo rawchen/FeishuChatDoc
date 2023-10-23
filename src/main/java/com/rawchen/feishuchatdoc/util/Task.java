@@ -12,15 +12,17 @@ public class Task {
 	private Answer answer;
 	private String account;
 
-	public Task(AnswerProcess process) {
+	public Task(AnswerProcess process, Answer answer, String account) {
 		this.process = process;
+		this.answer = answer;
+		this.account = account;
 	}
 
 	public void run() {
 		try {
 			process.process(answer);
 		} catch (Exception e) {
-			log.error("处理ChatGpt响应出错", e);
+			log.error("处理gpt响应出错", e);
 			log.error(answer.toString());
 
 		}

@@ -6,10 +6,10 @@ echo '---------------开始自动部署---------------'
 ROOT_PATH=$(cd $(dirname $0);cd .; pwd)
 
 # 项目名称
-PROJECT_NAME=FeishuBot
+PROJECT_NAME=FeishuChatDoc
 
 # LINUX部署目录
-DEPLOY_PATH=root/FeishuBot
+DEPLOY_PATH=root/FeishuChatDoc
 
 # 服务器地址
 SERVER_IP=xxx.xxx.xxx.xxx

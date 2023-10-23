@@ -5,10 +5,6 @@ import lombok.Data;
 @Data
 public class Conversation {
 	/**
-	 * gpt的会话id
-	 */
-	public String conversationId;
-	/**
 	 * 对话id，用于区分不同用户
 	 */
 	public String chatId;
@@ -20,10 +16,8 @@ public class Conversation {
 	 * 服务该会话的gpt模型
 	 */
 	public String model;
-	/**
-	 * gpt中的上下文消息id
-	 */
-	public String parentMessageId;
+
+
 	public volatile Status status;
 	/**
 	 * 消息中的标题

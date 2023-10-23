@@ -5,6 +5,6 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class AccountList {
-	private List<Account> accounts;
+public class DocFileList {
+	private List<DocFile> docFiles;
 }

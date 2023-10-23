@@ -1,0 +1,19 @@
+server:
+  port: 9000
+
+feishu:
+  appId: cli_a5a582d62798xxxx
+  appSecret: 86eoO8qF41FqRbEiqxLDbhcaBExxxxxxx
+  encryptKey: y3S1njLRAkGQM96zKWGMQgYwWXxxxxx
+  verificationToken: uxHCyXmUO8s2GYjn4PChxxxxxxxxxxx
+
+logging:
+  level:
+    root: info
+    com.rawchen: debug
+    com.lark.oapi.event.EventDispatcher: off
+    org.apache.coyote.http11.Http11Processor: warn
+
+
+
+

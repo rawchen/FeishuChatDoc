@@ -3,15 +3,13 @@ package com.rawchen.feishuchatdoc.handler;
 import com.lark.oapi.Client;
 import com.lark.oapi.service.contact.v3.model.User;
 import com.lark.oapi.service.im.v1.model.*;
-import com.rawchen.feishuchatdoc.entity.Conversation;
 import com.rawchen.feishuchatdoc.entity.Status;
 import com.rawchen.feishuchatdoc.entity.gpt.Answer;
 import com.rawchen.feishuchatdoc.entity.gpt.ErrorCode;
-import com.rawchen.feishuchatdoc.entity.gpt.Models;
 import com.rawchen.feishuchatdoc.service.MessageService;
 import com.rawchen.feishuchatdoc.service.UserService;
+import com.rawchen.feishuchatdoc.util.chatgpt.AccountPool;
 import com.rawchen.feishuchatdoc.util.chatgpt.ChatService;
-import com.rawchen.feishuchatdoc.util.chatgpt.ConversationPool;
 import com.rawchen.feishuchatdoc.util.chatgpt.RequestIdSet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,9 +24,9 @@ public class MessageHandler {
 
 
 	protected final Client client;
+	protected final AccountPool accountPool;
 	protected final UserService userService;
 	protected final MessageService messageService;
-	protected final ConversationPool conversationPool;
 
 	/**
 	 * 飞书推送事件会重复，用于去重
@@ -105,75 +103,65 @@ public class MessageHandler {
 			return;
 		}
 		String chatId = message.getChatId();
-		//尝试从会话池中获取会话，从而保持上下文
-		Conversation conversation = conversationPool.getConversation(chatId);
 
-		ChatService chatService = null;
-
-		String title = "当前文档数量: " + 2;
+		String title = "当前文档数量: " + 1;
 		String firstText = "正在生成中，请稍后...";
+
+		ChatService chatService = accountPool.getFreeChatService();
+		if (chatService == null) {
+			messageService.sendTextMessageByChatId(chatId, "目前该账号正在运行，请稍后重试。");
+			return;
+		}
 
 		// 首次发送的消息卡片
 		CreateMessageResp resp = messageService.sendGptAnswerMessage(chatId, title, firstText);
 		String messageId = resp.getData().getMessageId();
 
-//    Map<String, String> selections = createSelection(conversation);
-
-//		String modelParam = Models.modelMap.get(conversation.getModel()).getSlug();
-
-
-//		log.info("新建会话");
-		conversation.setTitle(title);
 		String finalTitle = title;
 		ChatService finalChatService = chatService;
-		chatService.newChat(text, answer -> {
-			processAnswer(answer, finalTitle, chatId, finalChatService, messageId, event);
-		});
+		chatService.newChat(text, answer -> processAnswer(answer, finalTitle, chatId, finalChatService, messageId, event));
 
 
 		log.info("服务完成: {}|{}|{}", chatService.getAccount(), chatId, messageId);
 	}
 
 	private void processAnswer(Answer answer, String title, String chatId, ChatService chatService, String messageId, P2MessageReceiveV1 event) throws Exception {
-		if (!answer.isSuccess()) {
+		if (answer.getStatus() == 99999999) {
 			// gpt请求失败
-			if (answer.getErrorCode() == ErrorCode.INVALID_JWT || answer.getErrorCode() == ErrorCode.INVALID_API_KEY) {
+			if (answer.getStatus() == ErrorCode.BUSY) {
 
-				messageService.modifyGptAnswerMessageCard(messageId, title, (String) answer.getError());
+				messageService.modifyGptAnswerMessageCard(messageId, title, answer.toString());
 				RequestIdSet.requestIdSet.remove(event.getRequestId());
 				process(event);
 				return;
-			} else if (answer.getErrorCode() == ErrorCode.ACCOUNT_DEACTIVATED) {
-				answer.setError(ErrorCode.map.get(ErrorCode.ACCOUNT_DEACTIVATED));
-				log.error("账号{} {}", chatService.getAccount(), ErrorCode.map.get(ErrorCode.ACCOUNT_DEACTIVATED));
-//				AccountPool.removeAccount(chatService.getAccount());
+			} else if (answer.getStatus() == ErrorCode.ACCOUNT_DEACTIVATED) {
+				log.error("错误：{} {}", chatService.getAccount(), ErrorCode.map.get(ErrorCode.ACCOUNT_DEACTIVATED));
 			}
-			messageService.modifyGptAnswerMessageCard(messageId, title, (String) answer.getError());
+			messageService.modifyGptAnswerMessageCard(messageId, title, answer.toString());
 			chatService.setStatus(Status.FINISHED);
-			conversationPool.getConversation(chatId).setStatus(Status.FINISHED);
+//			conversationPool.getConversation(chatId).setStatus(Status.FINISHED);
 			return;
 		}
-		Conversation conversation = conversationPool.getConversation(chatId);
-		conversation.setParentMessageId(answer.getMessage().getId());
-		conversation.setConversationId(answer.getConversationId());
+//		Conversation conversation = conversationPool.getConversation(chatId);
 
-		if (!answer.isFinished()) {
+		if (answer.getStatus() == 0 || answer.getStatus() == 99 || answer.getStatus() == 1) {
 			chatService.setStatus(Status.RUNNING);
-			conversation.setStatus(Status.RUNNING);
-		} else {
+//			conversation.setStatus(Status.RUNNING);
+		} else if(answer.getStatus() == 2) {
 			chatService.setStatus(Status.FINISHED);
-			conversation.setStatus(Status.FINISHED);
+			chatService.setCardText("");
+//			conversation.setStatus(Status.FINISHED);
 		}
 
-		String content = answer.getAnswer();
+		String content = answer.getContent();
 		if (content == null || content.equals("")) {
 			return;
 		}
 		PatchMessageResp resp1 = messageService.modifyGptAnswerMessageCard(messageId, title, content);
 
-		if (answer.isFinished() && resp1.getCode() == 230020) {
+		if (answer.getStatus() == 2 && resp1.getCode() == 230020) {
 			//保证最后完整的gpt响应 不会被飞书消息频率限制
-			while (answer.isFinished() && resp1.getCode() != 0) {
+			while (answer.getStatus() == 2 && resp1.getCode() != 0) {
 				log.warn("重试中 code: {} msg: {}", resp1.getCode(), resp1.getMsg());
 				TimeUnit.MILLISECONDS.sleep(500);
 				resp1 = messageService.modifyGptAnswerMessageCard(messageId, title, content);
