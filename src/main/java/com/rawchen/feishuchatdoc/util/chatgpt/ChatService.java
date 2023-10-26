@@ -2,6 +2,7 @@ package com.rawchen.feishuchatdoc.util.chatgpt;
 
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.rawchen.feishuchatdoc.chatdoc.dto.chat.ChatExtend;
 import com.rawchen.feishuchatdoc.chatdoc.dto.chat.ChatMessage;
 import com.rawchen.feishuchatdoc.chatdoc.dto.chat.ChatRequest;
 import com.rawchen.feishuchatdoc.chatdoc.util.ApiAuthUtil;
@@ -84,13 +85,18 @@ public class ChatService {
 		ChatMessage message = new ChatMessage();
 		message.setRole("user");
 		message.setContent(question);
+
+		ChatExtend extend = new ChatExtend();
+		extend.setSparkWhenWithoutEmbedding(true);
+		extend.setTemperature(0.5F);
 		// 请求内容
 		ChatRequest request = ChatRequest.builder()
 				.fileIds(Collections.singletonList(fileId))
 				.topN(3)
 				.messages(Collections.singletonList(message))
+				.chatExtends(extend)
 				.build();
-
+//		log.info("ChatRequest: {}", JSONUtil.toJsonStr(request));
 		// 构造url鉴权
 		long ts = System.currentTimeMillis() / 1000;
 		String signature = ApiAuthUtil.getSignature(appId, secret, ts);
@@ -116,7 +122,9 @@ public class ChatService {
 
 			@Override
 			public void onMessage(@NotNull WebSocket webSocket, @NotNull String text) {
-//				System.out.println(text);
+				if (!text.contains("\"code\":0")) {
+					log.info("错误信息: {}", text);
+				}
 				JSONObject jsonObject = JSONUtil.parseObj(text);
 				String content = jsonObject.getStr("content");
 				String sid = jsonObject.getStr("sid");

@@ -22,4 +22,6 @@ public class ChatRequest {
     private List<ChatMessage> messages;
 
     private Integer topN;
+
+    private ChatExtend chatExtends;
 }
