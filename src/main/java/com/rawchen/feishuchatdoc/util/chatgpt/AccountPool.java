@@ -29,36 +29,42 @@ import java.util.Map;
 @Data
 public class AccountPool {
 
-	protected final Environment environment;
+    protected final Environment environment;
 
-	private int size;
+    private int size;
 
-	public static Map<String, ChatService> accountPool = new HashMap<>();
+    public static Map<String, ChatService> accountPool = new HashMap<>();
 
-	/**
-	 * 初始化账号池（目前就一个账号/应用）
-	 */
-	@PostConstruct
-	public void init() {
-		List<String> usefulAccounts = new ArrayList<>();
+    @Value("${xfyun.appId}")
+    private String xfAppId;
 
-		ChatService chatService = new ChatService(Constants.CHAT_APP_ID, Constants.CHAT_APP_SECRET);
-		accountPool.put(Constants.CHAT_APP_ID, chatService);
-		usefulAccounts.add(Constants.CHAT_APP_ID);
-		TaskPool.init(usefulAccounts);
-		TaskPool.runTask();
-	}
+    @Value("${xfyun.apiSecret}")
+    private String xfApiSecret;
 
-	public ChatService getFreeChatService() {
-		if (accountPool.size() > 0) {
-			for (String s : accountPool.keySet()) {
-				ChatService chatService = accountPool.get(s);
-				if (chatService.getStatus() == Status.FINISHED) {
-					chatService.setStatus(Status.RUNNING);
-					return chatService;
-				}
-			}
-		}
-		return null;
-	}
+    /**
+     * 初始化账号池（目前就一个账号/应用）
+     */
+    @PostConstruct
+    public void init() {
+        List<String> usefulAccounts = new ArrayList<>();
+
+        ChatService chatService = new ChatService(xfAppId, xfApiSecret);
+        accountPool.put(xfAppId, chatService);
+        usefulAccounts.add(xfAppId);
+        TaskPool.init(usefulAccounts);
+        TaskPool.runTask();
+    }
+
+    public ChatService getFreeChatService() {
+        if (accountPool.size() > 0) {
+            for (String s : accountPool.keySet()) {
+                ChatService chatService = accountPool.get(s);
+                if (chatService.getStatus() == Status.FINISHED) {
+                    chatService.setStatus(Status.RUNNING);
+                    return chatService;
+                }
+            }
+        }
+        return null;
+    }
 }

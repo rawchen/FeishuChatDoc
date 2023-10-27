@@ -7,6 +7,10 @@ feishu:
   encryptKey: y3S1njLRAkGQM96zKWGMQgYwWXxxxxx
   verificationToken: uxHCyXmUO8s2GYjn4PChxxxxxxxxxxx
 
+xfyun:
+  appId: f20xxxx
+  apiSecret: NmY3ODE2ZmE4YjAxZjUzYzkwNTxxxxx
+
 logging:
   level:
     root: info

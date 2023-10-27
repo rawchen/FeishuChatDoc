@@ -17,26 +17,26 @@ import java.io.InputStream;
  */
 @Slf4j
 public class DocFileUtil {
-	private static final String YAML_PATH = "docfiles.yml";
+    private static final String YAML_PATH = "docfiles.yml";
 
-	public static DocFileList readFiles() {
-		Yaml yaml = new Yaml(new Constructor(DocFileList.class));
-		try (InputStream in = new FileSystemResource(YAML_PATH).getInputStream()) {
-			return yaml.loadAs(in, DocFileList.class);
-		} catch (IOException e) {
-			throw new RuntimeException("Failed to read YAML", e);
-		}
-	}
+    public static DocFileList readFiles() {
+        Yaml yaml = new Yaml(new Constructor(DocFileList.class));
+        try (InputStream in = new FileSystemResource(YAML_PATH).getInputStream()) {
+            return yaml.loadAs(in, DocFileList.class);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read YML", e);
+        }
+    }
 
-	public static void writeFiles(DocFileList docFileList) {
-		DumperOptions options = new DumperOptions();
-		options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-		options.setPrettyFlow(true);
-		Yaml yaml = new Yaml(new Representer(), options);
-		try (FileWriter writer = new FileWriter(YAML_PATH)) {
-			yaml.dump(docFileList, writer);
-		} catch (IOException e) {
-			throw new RuntimeException("Failed to write YAML", e);
-		}
-	}
+    public static void writeFiles(DocFileList docFileList) {
+        DumperOptions options = new DumperOptions();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        options.setPrettyFlow(true);
+        Yaml yaml = new Yaml(new Representer(), options);
+        try (FileWriter writer = new FileWriter(YAML_PATH)) {
+            yaml.dump(docFileList, writer);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write YML", e);
+        }
+    }
 }

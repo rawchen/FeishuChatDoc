@@ -1,20 +1,24 @@
 package com.rawchen.feishuchatdoc.config;
 
 import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 /**
  * @author RawChen
  * @date 2023-10-23 23:44
  */
-@Component
 @Data
-@ConfigurationProperties(prefix = "custom")
 public class Constants {
 
-	public static final String CHAT_APP_ID = "f20ffxxx";
+    // 文档上传
+    public static final String FILE_UPLOAD_URL = "https://chatdoc.xfyun.cn/openapi/fileUpload";
 
-	public static final String CHAT_APP_SECRET = "NmY3ODE2ZmE4YjAxZjUzYzkwNTQ3Mxxx";
+    // 文档问答
+    public static final String CHAT_URL = "wss://chatdoc.xfyun.cn/openapi/chat";
+
+    // 发起文档总结
+    public static final String START_SUMMARY_URL = "https://chatdoc.xfyun.cn/openapi/startSummary";
+
+    // 获取文档总结/概要内容
+    public static final String FILE_SUMMARY_URL = "https://chatdoc.xfyun.cn/openapi/fileSummary";
 
 }

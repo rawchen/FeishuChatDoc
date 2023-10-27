@@ -2,7 +2,9 @@ package com.rawchen.feishuchatdoc;
 
 import com.lark.oapi.service.im.v1.model.CreateMessageResp;
 import com.lark.oapi.service.im.v1.model.PatchMessageResp;
+import com.rawchen.feishuchatdoc.entity.DocFileList;
 import com.rawchen.feishuchatdoc.service.MessageService;
+import com.rawchen.feishuchatdoc.util.chatgpt.DocFileUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -48,6 +50,12 @@ class FeishuChatDocApplicationTests {
             }
         }
 
+    }
+
+    @Test
+    void test05() {
+        DocFileList docFileList = DocFileUtil.readFiles();
+        docFileList.getFiles().forEach(System.out::println);
     }
 
 }

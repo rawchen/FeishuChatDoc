@@ -6,5 +6,5 @@ import java.util.List;
 
 @Data
 public class DocFileList {
-	private List<DocFile> docFiles;
+    private List<DocFile> files;
 }

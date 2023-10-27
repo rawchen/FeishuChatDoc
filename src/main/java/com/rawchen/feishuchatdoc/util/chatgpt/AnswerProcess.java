@@ -4,5 +4,5 @@ import com.rawchen.feishuchatdoc.entity.gpt.Answer;
 
 public interface AnswerProcess {
 
-	void process(Answer answer) throws Exception;
+    void process(Answer answer) throws Exception;
 }

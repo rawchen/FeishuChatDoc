@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class DocFile {
-	private String fileId;
-	private String desc;
+    private String fileId;
+    private String desc;
 }

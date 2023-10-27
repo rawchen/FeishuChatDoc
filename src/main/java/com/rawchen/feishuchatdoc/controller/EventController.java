@@ -27,108 +27,108 @@ import javax.servlet.http.HttpServletResponse;
 @Slf4j
 public class EventController {
 
-	protected final MessageHandler messageHandler;
+    protected final MessageHandler messageHandler;
 
-	@Value("${feishu.verificationToken}")
-	private String verificationToken;
+    @Value("${feishu.verificationToken}")
+    private String verificationToken;
 
-	@Value("${feishu.encryptKey}")
-	private String encryptionKey;
+    @Value("${feishu.encryptKey}")
+    private String encryptionKey;
 
-	private EventDispatcher EVENT_DISPATCHER;
+    private EventDispatcher EVENT_DISPATCHER;
 
-	protected final ConversationPool conversationPool;
+    protected final ConversationPool conversationPool;
 
-	protected final ServletAdapter servletAdapter;
+    protected final ServletAdapter servletAdapter;
 
-	/**
-	 * 处理事件回调
-	 *
-	 * @param request
-	 * @param response
-	 * @throws Throwable
-	 */
-	@RequestMapping("/chatEvent")
-	public void event(HttpServletRequest request, HttpServletResponse response)
-			throws Throwable {
-		if (EVENT_DISPATCHER == null) {
-			init();
-		}
-		servletAdapter.handleEvent(request, response, EVENT_DISPATCHER);
-	}
+    /**
+     * 处理事件回调
+     *
+     * @param request
+     * @param response
+     * @throws Throwable
+     */
+    @RequestMapping("/chatEvent")
+    public void event(HttpServletRequest request, HttpServletResponse response)
+            throws Throwable {
+        if (EVENT_DISPATCHER == null) {
+            init();
+        }
+        servletAdapter.handleEvent(request, response, EVENT_DISPATCHER);
+    }
 
-	/**
-	 * 处理消息卡片事件回调
-	 *
-	 * @param body
-	 * @return
-	 */
-	@PostMapping("/cardEvent")
-	@ResponseBody
-	public String event(@RequestBody String body) {
-		log.debug("收到消息卡片事件: {}", body);
-		JSONObject payload = new JSONObject(body);
-		if (payload.opt("challenge") != null) {
-			JSONObject res = new JSONObject();
-			res.put("challenge", payload.get("challenge"));
-			return res.toString();
-		}
+    /**
+     * 处理消息卡片事件回调
+     *
+     * @param body
+     * @return
+     */
+    @PostMapping("/cardEvent")
+    @ResponseBody
+    public String event(@RequestBody String body) {
+        log.debug("收到消息卡片事件: {}", body);
+        JSONObject payload = new JSONObject(body);
+        if (payload.opt("challenge") != null) {
+            JSONObject res = new JSONObject();
+            res.put("challenge", payload.get("challenge"));
+            return res.toString();
+        }
 
-		String chatId = String.valueOf(payload.get("open_chat_id"));
+        String chatId = String.valueOf(payload.get("open_chat_id"));
 
-		JSONObject action = (JSONObject) payload.get("action");
-		String option = (String) action.get("option");
+        JSONObject action = (JSONObject) payload.get("action");
+        String option = (String) action.get("option");
 
-		Conversation bean = JSONUtil.toBean(option, Conversation.class);
-		bean.setChatId(chatId);
-		conversationPool.addConversation(chatId, bean);
-		return "";
-	}
+        Conversation bean = JSONUtil.toBean(option, Conversation.class);
+        bean.setChatId(chatId);
+        conversationPool.addConversation(chatId, bean);
+        return "";
+    }
 
-	private void init() {
-		EVENT_DISPATCHER = EventDispatcher.newBuilder(verificationToken, encryptionKey)
-				.onP2MessageReceiveV1(new ImService.P2MessageReceiveV1Handler() {
-					@Override
-					public void handle(P2MessageReceiveV1 event) {
-						//处理消息事件
-						try {
+    private void init() {
+        EVENT_DISPATCHER = EventDispatcher.newBuilder(verificationToken, encryptionKey)
+                .onP2MessageReceiveV1(new ImService.P2MessageReceiveV1Handler() {
+                    @Override
+                    public void handle(P2MessageReceiveV1 event) {
+                        //处理消息事件
+                        try {
 //							log.info("收到消息: {}", Jsons.DEFAULT.toJson(event));
-							log.info("事件时间: {}", DateUtil.formatDateTime(
-									DateUtil.date(Long.parseLong(event.getEvent().getMessage().getCreateTime()))));
-							messageHandler.process(event);
-						} catch (Exception e) {
-							log.error("处理消息失败", e);
-							throw new RuntimeException(e);
-						}
-					}
-				}).onP2UserCreatedV3(new ContactService.P2UserCreatedV3Handler() {
-					@Override
-					public void handle(P2UserCreatedV3 event) {
-						//员工入职事件
-						//System.out.println(Jsons.DEFAULT.toJson(event));
-						//System.out.println(event.getRequestId());
-					}
-				})
-				.onP2MessageReadV1(new ImService.P2MessageReadV1Handler() {
-					@Override
-					public void handle(P2MessageReadV1 event) {
-						//处理私聊已读事件
-						//System.out.println(Jsons.DEFAULT.toJson(event));
-						//System.out.println(event.getRequestId());
-					}
-				}).onP1MessageReadV1(new ImService.P1MessageReadV1Handler() {
-					@Override
-					public void handle(P1MessageReadV1 event) {
-						//System.out.println(Jsons.DEFAULT.toJson(event));
-						//System.out.println(event.getRequestId());
-					}
-				})
-				.build();
-	}
+                            log.info("事件时间: {}", DateUtil.formatDateTime(
+                                    DateUtil.date(Long.parseLong(event.getEvent().getMessage().getCreateTime()))));
+                            messageHandler.process(event);
+                        } catch (Exception e) {
+                            log.error("处理消息失败", e);
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }).onP2UserCreatedV3(new ContactService.P2UserCreatedV3Handler() {
+                    @Override
+                    public void handle(P2UserCreatedV3 event) {
+                        //员工入职事件
+                        //System.out.println(Jsons.DEFAULT.toJson(event));
+                        //System.out.println(event.getRequestId());
+                    }
+                })
+                .onP2MessageReadV1(new ImService.P2MessageReadV1Handler() {
+                    @Override
+                    public void handle(P2MessageReadV1 event) {
+                        //处理私聊已读事件
+                        //System.out.println(Jsons.DEFAULT.toJson(event));
+                        //System.out.println(event.getRequestId());
+                    }
+                }).onP1MessageReadV1(new ImService.P1MessageReadV1Handler() {
+                    @Override
+                    public void handle(P1MessageReadV1 event) {
+                        //System.out.println(Jsons.DEFAULT.toJson(event));
+                        //System.out.println(event.getRequestId());
+                    }
+                })
+                .build();
+    }
 
-	@GetMapping("/ping")
-	@ResponseBody
-	public String ping() {
-		return "pong";
-	}
+    @GetMapping("/ping")
+    @ResponseBody
+    public String ping() {
+        return "pong";
+    }
 }
