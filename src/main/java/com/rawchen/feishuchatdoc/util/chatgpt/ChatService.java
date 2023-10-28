@@ -37,12 +37,6 @@ public class ChatService {
 
     private StringBuilder errorString;
 
-    @Value("${xfyun.appId}")
-    private String xfAppId;
-
-    @Value("${xfyun.apiSecret}")
-    private String xfApiSecret;
-
     public ChatService() {
         this.status = Status.FINISHED;
     }
@@ -103,8 +97,8 @@ public class ChatService {
 //		log.info("ChatRequest: {}", JSONUtil.toJsonStr(request));
         // 构造url鉴权
         long ts = System.currentTimeMillis() / 1000;
-        String signature = ApiAuthUtil.getSignature(xfAppId, xfApiSecret, ts);
-        String requestUrl = Constants.CHAT_URL + "?" + "appId=" + xfAppId + "&timestamp=" + ts + "&signature=" + signature;
+        String signature = ApiAuthUtil.getSignature(account, secret, ts);
+        String requestUrl = Constants.CHAT_URL + "?" + "appId=" + account + "&timestamp=" + ts + "&signature=" + signature;
         // ws
         Request wsRequest = (new Request.Builder()).url(requestUrl).build();
         OkHttpClient okHttpClient = new OkHttpClient().newBuilder().build();

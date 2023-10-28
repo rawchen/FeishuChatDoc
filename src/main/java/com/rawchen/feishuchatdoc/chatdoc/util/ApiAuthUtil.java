@@ -29,6 +29,9 @@ public class ApiAuthUtil {
     public static String getSignature(String appId, String secret, long ts) {
         try {
             String auth = md5(appId + ts);
+            if (auth == null) {
+                return null;
+            }
             return hmacSHA1Encrypt(auth, secret);
         } catch (SignatureException e) {
             return null;

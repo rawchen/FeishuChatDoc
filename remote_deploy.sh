@@ -9,7 +9,7 @@ ROOT_PATH=$(cd $(dirname $0);cd .; pwd)
 PROJECT_NAME=FeishuChatDoc
 
 # LINUX部署目录
-DEPLOY_PATH=root/FeishuChatDoc
+DEPLOY_PATH=root/${PROJECT_NAME}
 
 # 服务器地址
 SERVER_IP=xxx.xxx.xxx.xxx
@@ -26,9 +26,9 @@ mv target/${PROJECT_NAME}-0.0.1-SNAPSHOT.jar target/${PROJECT_NAME}.jar
 
 echo '---------------开始上传项目---------------'
 
-scp -r -i id_rsa.pem -P 22 target/${PROJECT_NAME}.jar root@${SERVER_IP}:/${DEPLOY_PATH}
+scp -i id_rsa.pem -P 22 target/${PROJECT_NAME}.jar root@${SERVER_IP}:/${DEPLOY_PATH}
 
-echo '---------------kill源进程---------------'
+echo '---------------结束项目进程---------------'
 
 ssh -i id_rsa.pem -p 22 root@${SERVER_IP} << EOF
 
@@ -36,7 +36,9 @@ cd /${DEPLOY_PATH};
 
 ps -ef | grep ${PROJECT_NAME}.jar | grep -v 'grep' | cut -c 9-15 | xargs kill -s 9
 
-echo '---------------启动项目中---------------'
+echo '---------------开始启动项目---------------'
+
+chmod +x ${PROJECT_NAME}.jar
 
 ./start.sh
 
