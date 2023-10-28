@@ -3,6 +3,7 @@ package com.rawchen.feishuchatdoc.handler;
 import com.lark.oapi.Client;
 import com.lark.oapi.service.contact.v3.model.User;
 import com.lark.oapi.service.im.v1.model.*;
+import com.rawchen.feishuchatdoc.entity.DocFileList;
 import com.rawchen.feishuchatdoc.entity.Status;
 import com.rawchen.feishuchatdoc.entity.gpt.Answer;
 import com.rawchen.feishuchatdoc.entity.gpt.ErrorCode;
@@ -10,6 +11,7 @@ import com.rawchen.feishuchatdoc.service.MessageService;
 import com.rawchen.feishuchatdoc.service.UserService;
 import com.rawchen.feishuchatdoc.util.chatgpt.AccountPool;
 import com.rawchen.feishuchatdoc.util.chatgpt.ChatService;
+import com.rawchen.feishuchatdoc.util.chatgpt.DocFileUtil;
 import com.rawchen.feishuchatdoc.util.chatgpt.RequestIdSet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -105,7 +107,12 @@ public class MessageHandler {
         }
         String chatId = message.getChatId();
 
-        String title = "当前文档数量: " + 1;
+        int docCount = 0;
+        DocFileList docFileList = DocFileUtil.readFiles();
+        if (docFileList.getFiles() != null) {
+            docCount = docFileList.getFiles().size();
+        }
+        String title = "当前文档数量: " + docCount;
         String firstText = "正在生成中，请稍后...";
 
         ChatService chatService = accountPool.getFreeChatService();
